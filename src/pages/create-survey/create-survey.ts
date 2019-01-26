@@ -32,6 +32,7 @@ export class CreateSurveyPage {
   prev_description;
 
   userCanLeave = true;
+  savingFlag = false;
   enteringQuestionPage = false;
 
   surveys = {};
@@ -119,6 +120,8 @@ export class CreateSurveyPage {
   }
 
   saveChanges(){
+    this.savingFlag = true;
+
     // save changes to ionic localStorage
     this.survey['title'] = this.surveyTitle.value || "untitled survey";
     this.survey['description'] = this.surveyDescription.value || "No Description to show.";
@@ -179,9 +182,13 @@ export class CreateSurveyPage {
 
     this.storage.set('surveys', this.surveys).then((val) =>{});
 
-
-    // redirect to survey-list: showing all surveys
     this.navCtrl.pop();
+
+    // pop the templates-list page
+    if(this.navParams.get('surveyFromTemplate')){
+      this.navCtrl.pop();
+    }
+    // redirect to survey-list: showing all surveys
     this.navCtrl.parent.select(1);
   }
 
@@ -268,7 +275,7 @@ export class CreateSurveyPage {
     this.checkAllChanges();
 
     // here you can use other vars to see if there are reasons we want to keep user in this page:
-    if (!this.userCanLeave && !this.enteringQuestionPage) {
+    if (!this.userCanLeave && !this.enteringQuestionPage && !this.savingFlag) {
       return new Promise((resolve, reject) => {
         let alert = this.alertCtrl.create({
           title: 'Changes made',
@@ -278,7 +285,6 @@ export class CreateSurveyPage {
               text: "Don't Save",
               handler: () => {
                 console.log("User didn't saved data");
-                // do saving logic
                 this.userCanLeave = true;
                 resolve();
               }
